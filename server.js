@@ -2,27 +2,50 @@ const express = require("express");
 const app = express();
 
 let scores = {};
+let currentUser = null;
+
 // หน้าแรก
 app.get("/", (req, res) => {
   res.send("API running");
 });
-// เพิ่มคะแนน
-app.get("/add", (req, res) => {
-  const user = req.query.user || "unknown";
+
+// ✅ login จากเว็บ
+app.get("/login", (req, res) => {
+  const user = req.query.user;
+
+  if (!user) {
+    return res.send("no user");
+  }
+
+  currentUser = user;
+
   if (!scores[user]) {
     scores[user] = 0;
   }
-  scores[user]++;
-  res.send("added for user " + user);
+
+  res.send("logged in as " + user);
 });
-// ⭐ เพิ่มอันนี้
+
+// ✅ เพิ่มคะแนนจาก ESP32
+app.get("/add", (req, res) => {
+  if (!currentUser) {
+    return res.send("no user logged in");
+  }
+
+  scores[currentUser]++;
+  res.send("added for " + currentUser);
+});
+
+// ✅ ดูคะแนนทั้งหมด
 app.get("/score", (req, res) => {
   res.json(scores);
 });
+
+// รีเซ็ตคะแนน
 app.get("/reset", (req, res) => {
   scores = {};
   res.send("reset");
 });
-// เริ่มเซิร์ฟเวอร์
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on " + PORT));
