@@ -12,6 +12,8 @@ app.get("/", (req, res) => {
 app.get("/add", (req, res) => {
   score++;
   res.send("added " + score);
+  app.listen(3000, () => console.log("Server running"));
+
 });
 
-app.listen(3000, () => console.log("Server running"));
+
