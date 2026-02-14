@@ -17,6 +17,11 @@ app.get("/add", (req, res) => {
 app.get("/score", (req, res) => {
   res.json({ score: score });
 });
+app.get("/reset", (req, res) => {
+  score = 0;
+  res.send("reset");
+});
+
 
 // เริ่มเซิร์ฟเวอร์
 const PORT = process.env.PORT || 3000;
