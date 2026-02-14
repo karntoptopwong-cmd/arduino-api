@@ -12,8 +12,7 @@ app.get("/", (req, res) => {
 app.get("/add", (req, res) => {
   score++;
   res.send("added " + score);
-  app.listen(3000, () => console.log("Server running"));
-
 });
 
-
+// เริ่มเซิร์ฟเวอร์
+app.listen(3000, () => console.log("Server running"));
