@@ -3,6 +3,9 @@ const app = express();
 app.use(express.json());
 
 let scores = {};
+app.get("/", (req, res) => {
+  res.send("Arduino API running");
+});
 
 app.post("/add", (req, res) => {
   const { user, points } = req.body;
