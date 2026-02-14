@@ -15,4 +15,5 @@ app.get("/add", (req, res) => {
 });
 
 // เริ่มเซิร์ฟเวอร์
-app.listen(3000, () => console.log("Server running"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on " + PORT));
