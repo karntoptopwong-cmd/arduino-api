@@ -1,7 +1,8 @@
+
 const express = require("express");
 const app = express();
 const crypto = require("crypto");
-
+let users = {};
 let scores = {};
 let sessions = {}; // token → user
 
@@ -11,21 +12,37 @@ app.get("/", (req, res) => {
 });
 
 // ✅ LOGIN → ส่ง token กลับ
+// สมัครสมาชิก
+app.get("/register", (req, res) => {
+  const { user, pass } = req.query;
+
+  if (!user || !pass) {
+    return res.json({ error: "missing data" });
+  }
+
+  if (users[user]) {
+    return res.json({ error: "user exists" });
+  }
+
+  users[user] = pass;
+  scores[user] = 0;
+
+  res.json({ message: "registered" });
+});
+
 app.get("/login", (req, res) => {
-  const user = req.query.user;
+  const { user, pass } = req.query;
 
-  if (!user) return res.send("no user");
+  if (!users[user] || users[user] !== pass) {
+    return res.json({ error: "invalid login" });
+  }
 
-  // สร้าง token
   const token = crypto.randomBytes(16).toString("hex");
-
   sessions[token] = user;
 
-  if (!scores[user]) scores[user] = 0;
-
   res.json({
-    token: token,
-    user: user
+    token,
+    user
   });
 });
 
