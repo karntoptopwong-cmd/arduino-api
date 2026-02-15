@@ -2,6 +2,8 @@
 const express = require("express");
 const app = express();
 const crypto = require("crypto");
+const cors = require("cors");
+app.use(cors());   // ⭐ อนุญาตให้เว็บเรียก API
 let users = {};
 let scores = {};
 let sessions = {}; // token → user
