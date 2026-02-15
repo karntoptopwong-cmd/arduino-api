@@ -2,22 +2,19 @@ const express = require("express");
 const app = express();
 
 let scores = {};
-let currentUser = null;
 
 // หน้าแรก
 app.get("/", (req, res) => {
   res.send("API running");
 });
 
-// ✅ login จากเว็บ
+// ✅ login จากเว็บ (ใช้แค่ตรวจสอบ)
 app.get("/login", (req, res) => {
   const user = req.query.user;
 
   if (!user) {
     return res.send("no user");
   }
-
-  currentUser = user;
 
   if (!scores[user]) {
     scores[user] = 0;
@@ -28,12 +25,19 @@ app.get("/login", (req, res) => {
 
 // ✅ เพิ่มคะแนนจาก ESP32
 app.get("/add", (req, res) => {
-  if (!currentUser) {
-    return res.send("no user logged in");
+  const user = req.query.user;
+
+  if (!user) {
+    return res.send("no user");
   }
 
-  scores[currentUser]++;
-  res.send("added for " + currentUser);
+  if (!scores[user]) {
+    scores[user] = 0;
+  }
+
+  scores[user]++;
+
+  res.send("added for " + user);
 });
 
 // ✅ ดูคะแนนทั้งหมด
