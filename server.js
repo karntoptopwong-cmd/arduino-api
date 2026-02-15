@@ -1,51 +1,65 @@
 const express = require("express");
 const app = express();
+const crypto = require("crypto");
 
 let scores = {};
+let sessions = {}; // token → user
 
 // หน้าแรก
 app.get("/", (req, res) => {
   res.send("API running");
 });
 
-// ✅ login จากเว็บ (ใช้แค่ตรวจสอบ)
+// ✅ LOGIN → ส่ง token กลับ
 app.get("/login", (req, res) => {
   const user = req.query.user;
 
-  if (!user) {
-    return res.send("no user");
-  }
+  if (!user) return res.send("no user");
 
-  if (!scores[user]) {
-    scores[user] = 0;
-  }
+  // สร้าง token
+  const token = crypto.randomBytes(16).toString("hex");
 
-  res.send("logged in as " + user);
+  sessions[token] = user;
+
+  if (!scores[user]) scores[user] = 0;
+
+  res.json({
+    token: token,
+    user: user
+  });
 });
 
-// ✅ เพิ่มคะแนนจาก ESP32
+// ✅ เพิ่มคะแนน (ใช้ token)
 app.get("/add", (req, res) => {
-  const user = req.query.user;
+  const token = req.query.token;
 
-  if (!user) {
-    return res.send("no user");
+  if (!token || !sessions[token]) {
+    return res.send("invalid token");
   }
 
-  if (!scores[user]) {
-    scores[user] = 0;
-  }
-
+  const user = sessions[token];
   scores[user]++;
 
   res.send("added for " + user);
 });
 
-// ✅ ดูคะแนนทั้งหมด
+// ✅ ดูคะแนน
 app.get("/score", (req, res) => {
-  res.json(scores);
+  const token = req.query.token;
+
+  if (!token || !sessions[token]) {
+    return res.send("invalid token");
+  }
+
+  const user = sessions[token];
+
+  res.json({
+    user: user,
+    score: scores[user] || 0
+  });
 });
 
-// รีเซ็ตคะแนน
+// รีเซ็ต
 app.get("/reset", (req, res) => {
   scores = {};
   res.send("reset");
