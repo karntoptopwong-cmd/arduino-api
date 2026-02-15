@@ -9,38 +9,28 @@ app.use(cors());
 const USERS_FILE = "users.json";
 const SCORES_FILE = "scores.json";
 
-// โหลดข้อมูลจากไฟล์
-function loadData(file) {
-  try {
-    return JSON.parse(fs.readFileSync(file));
-  } catch {
-    return {};
+// โหลดไฟล์
+function loadJSON(file) {
+  if (!fs.existsSync(file)) {
+    fs.writeFileSync(file, "{}");
   }
+  return JSON.parse(fs.readFileSync(file));
 }
 
-// บันทึกข้อมูลลงไฟล์
-function saveData(file, data) {
+function saveJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
-let users = loadData(USERS_FILE);
-let scores = loadData(SCORES_FILE);
-let sessions = {}; // token → user
-
-// หน้าแรก
-app.get("/", (req, res) => {
-  res.send("API running");
-});
-
-
-// ==========================
-// สมัครสมาชิก
-// ==========================
+// ========================
+// REGISTER
+// ========================
 app.get("/register", (req, res) => {
   const { user, pass } = req.query;
-
   if (!user || !pass)
     return res.json({ error: "missing data" });
+
+  let users = loadJSON(USERS_FILE);
+  let scores = loadJSON(SCORES_FILE);
 
   if (users[user])
     return res.json({ error: "user exists" });
@@ -48,18 +38,20 @@ app.get("/register", (req, res) => {
   users[user] = pass;
   scores[user] = 0;
 
-  saveData(USERS_FILE, users);
-  saveData(SCORES_FILE, scores);
+  saveJSON(USERS_FILE, users);
+  saveJSON(SCORES_FILE, scores);
 
   res.json({ message: "registered" });
 });
 
-
-// ==========================
+// ========================
 // LOGIN
-// ==========================
+// ========================
+let sessions = {};
+
 app.get("/login", (req, res) => {
   const { user, pass } = req.query;
+  const users = loadJSON(USERS_FILE);
 
   if (!users[user] || users[user] !== pass)
     return res.json({ error: "invalid login" });
@@ -70,35 +62,16 @@ app.get("/login", (req, res) => {
   res.json({ token, user });
 });
 
-
-// ==========================
-// เพิ่มคะแนน
-// ==========================
-app.get("/add", (req, res) => {
-  const token = req.query.token;
-
-  if (!token || !sessions[token])
-    return res.send("invalid token");
-
-  const user = sessions[token];
-
-  scores[user] = (scores[user] || 0) + 1;
-  saveData(SCORES_FILE, scores);
-
-  res.send("added for " + user);
-});
-
-
-// ==========================
-// ดูคะแนน
-// ==========================
+// ========================
+// SCORE
+// ========================
 app.get("/score", (req, res) => {
   const token = req.query.token;
-
   if (!token || !sessions[token])
-    return res.send("invalid token");
+    return res.json({ error: "invalid token" });
 
   const user = sessions[token];
+  const scores = loadJSON(SCORES_FILE);
 
   res.json({
     user,
@@ -106,16 +79,7 @@ app.get("/score", (req, res) => {
   });
 });
 
-
-// ==========================
-// รีเซ็ตคะแนน
-// ==========================
-app.get("/reset", (req, res) => {
-  scores = {};
-  saveData(SCORES_FILE, scores);
-  res.send("reset");
-});
-
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server running on " + PORT));
+app.listen(PORT, () =>
+  console.log("Server running on " + PORT)
+);
