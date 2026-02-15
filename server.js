@@ -38,7 +38,9 @@ app.get("/add", (req, res) => {
   }
 
   const user = sessions[token];
-  scores[user]++;
+ if (!scores[user]) scores[user] = 0;
+scores[user]++;
+
 
   res.send("added for " + user);
 });
